@@ -9,12 +9,19 @@ type Server struct {
 	listenAddr string
 	ln         net.Listener
 	quitch     chan struct{}
+	msgch      chan []byte
+}
+
+func (s *Server) GetMsgch() chan []byte {
+	return s.msgch
 }
 
 func NewServer(listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		quitch:     make(chan struct{}),
+		//setting 10 arbitrarily
+		msgch: make(chan []byte, 10),
 	}
 }
 
@@ -31,6 +38,7 @@ func (s *Server) Start() error {
 	go s.AcceptLoop()
 
 	<-s.quitch
+	close(s.msgch)
 
 	return nil
 }
@@ -60,8 +68,8 @@ func (s *Server) ReadLoop(conn net.Conn) {
 			continue
 		}
 
-		//decide what to do with this buffer
-		msg := buf[:n]
-		fmt.Println(string(msg))
+		s.msgch <- buf[:n]
+
+		conn.Write([]byte("roger that!\n"))
 	}
 }
