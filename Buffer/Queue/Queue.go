@@ -52,3 +52,15 @@ func DebugQueue(head *Node) {
 		fmt.Printf("->%s\n", temp.value)
 	}
 }
+
+func ConcatValues(head *Node) string {
+	temp := head
+	concat := ""
+	for temp.next != nil {
+		concat += temp.value + ";"
+		temp = temp.next
+	}
+	concat += temp.value + ";"
+
+	return concat
+}
