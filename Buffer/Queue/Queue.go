@@ -1,5 +1,7 @@
 package Queue
 
+import "fmt"
+
 type Node struct {
 	value string
 	next  *Node
@@ -23,12 +25,30 @@ func Enqueue(head *Node, value string) *Node {
 }
 
 func Dequeue(head *Node) (*Node, string) {
-	var dequeued *Node = head
+	if head == nil {
+		fmt.Println("queue empty, cannot dequeue")
+		return head, "-1"
+	} else {
+		var dequeued *Node = head
 
-	head = head.next
-	dequeued.next = nil
-	var dequeuedstr string = dequeued.value
-	dequeued = nil
+		head = head.next
+		dequeued.next = nil
+		var dequeuedstr string = dequeued.value
+		dequeued = nil
 
-	return head, dequeuedstr
+		return head, dequeuedstr
+	}
+}
+
+func DebugQueue(head *Node) {
+	if head == nil {
+		fmt.Println("queue empty!")
+	} else {
+		var temp *Node = head
+		for temp.next != nil {
+			fmt.Printf("->%s", temp.value)
+			temp = temp.next
+		}
+		fmt.Printf("->%s\n", temp.value)
+	}
 }

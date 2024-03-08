@@ -2,7 +2,6 @@ package Buffer
 
 import (
 	"isred/Buffer/Queue"
-	"os"
 )
 
 type Buffer struct {
@@ -22,26 +21,26 @@ func InitialiseBuffer(replicationID int) *Buffer {
 	}
 }
 
-func (buf *Buffer) PersistBuffer() {
-	//store buffer to disk
-	f, err := os.Create("buffer")
-	if err != nil {
-		panic(err)
-	}
+// func (buf *Buffer) PersistBuffer() {
+// 	//store buffer to disk
+// 	f, err := os.Create("buffer")
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	defer f.Close()
+// 	defer f.Close()
 
-	var toWrite string = ""
-	for command := range values {
-		toWrite += string(command) + ";"
-	}
-	_, err = f.WriteString(toWrite)
-	if err != nil {
-		panic(err)
-	}
+// 	var toWrite string = ""
+// 	for command := range values {
+// 		toWrite += string(command) + ";"
+// 	}
+// 	_, err = f.WriteString(toWrite)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	f.Sync()
-}
+// 	f.Sync()
+// }
 
 func (buf *Buffer) PushCommand(command string) *Buffer {
 	//enqueue with err
