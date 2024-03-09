@@ -6,7 +6,10 @@ import (
 )
 
 func main() {
-	buf := Buffer.InitialiseBuffer(-1)
+	buf, err := Buffer.InitialiseBuffer(-1)
+	if err != nil {
+		fmt.Println("Initialise Buffer Error:", err)
+	}
 
 	buf = buf.PushCommand("hallo")
 	buf = buf.PushCommand("is")
@@ -20,9 +23,9 @@ func main() {
 
 	buf.DebugBuffer()
 
-	buf.PersistBuffer()
+	buf.PersistBuffer("buffer")
 
-	buf, err := buf.ReadBuffer()
+	buf, err = buf.ReadBuffer("buffer")
 	if err != nil {
 		fmt.Println("Error Reading Buffer:", err)
 	}
