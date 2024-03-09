@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"isred/Buffer"
 )
 
@@ -21,5 +22,12 @@ func main() {
 
 	buf.PersistBuffer()
 
-	buf.ReadBuffer()
+	buf, err := buf.ReadBuffer()
+	if err != nil {
+		fmt.Println("Error Reading Buffer:", err)
+	}
+
+	buf.DebugBuffer()
+	buf = buf.PushCommand("NEWLY FORMED!")
+	buf.DebugBuffer()
 }

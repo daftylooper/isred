@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"isred/Buffer/Queue"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -14,62 +15,56 @@ type Buffer struct {
 	size          int
 }
 
-// func InitialiseBuffer(replicationID int) *Buffer {
-// 	if replicationID != -1 {
-// 		//looks for saved state, if it is there, reload
+func InitialiseBuffer(replicationID int) (*Buffer, error) {
+	if replicationID != -1 {
+		var initialised *Queue.Node = nil
+		return &Buffer{head: initialised, replicationID: 0, size: 0}, nil
+	} else {
+		// Open the file
+		file, err := os.Open("buffer.buf")
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			return nil, err
+		}
+		defer file.Close()
 
-// 		// &Buffer{head: initialised, replicationID: 1}
-// 	} else {
-// 		//else initialise an empty buffer
-// 		var initialised *Queue.Node = Queue.MakeNode("nil")
-// 		return &Buffer{head: initialised, replicationID: 0, size: 0}
-// 	}
-// }
+		// Read the contents of the file
+		scanner := bufio.NewScanner(file)
+		var bufferValues string
+		for scanner.Scan() {
+			bufferValues = scanner.Text()
+		}
+		if err := scanner.Err(); err != nil {
+			fmt.Println("Error reading file:", err)
+			return nil, err
+		}
 
-func (buf *Buffer) ReadBuffer() {
-	// Open the file
-	file, err := os.Open("buffer0")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
+		// Split the content by the delimiter ";"
+		parts := strings.Split(bufferValues, ";")
+
+		replicationID, err := strconv.Atoi(parts[0])
+		if err != nil {
+			fmt.Println("Buffer File Parse Error: Couldn't Read Replication ID")
+			return nil, err
+		}
+		size, err := strconv.Atoi(parts[1])
+		if err != nil {
+			fmt.Println("Buffer File Parse Error: Couldn't Read Size")
+			return nil, err
+		}
+		var initialised *Queue.Node = nil
+		buffer := parts[2 : len(parts)-1] //includes a blank val in parts array duie to strings.Split
+		for _, bufvals := range buffer {
+			initialised = Queue.Enqueue(initialised, bufvals)
+		}
+
+		return &Buffer{head: initialised, replicationID: replicationID, size: size}, nil
 	}
-	defer file.Close()
-
-	// Read the contents of the file
-	scanner := bufio.NewScanner(file)
-	var bufferValues string
-	for scanner.Scan() {
-		bufferValues = scanner.Text()
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	fmt.Println("-----> ", bufferValues)
-
-	// Split the content by the delimiter ";"
-	parts := strings.Split(bufferValues, ";")
-
-	// Extract metadata and buffer values
-	size := parts[0]
-	replicationID := parts[1]
-	buffer := parts[2:]
-
-	// Print metadata and buffer values
-	fmt.Println("Size:", size)
-	fmt.Println("ReplicationID:", replicationID)
-	fmt.Println("Buffer Values:", buffer)
-}
-
-func InitialiseBuffer(replicationID int) *Buffer {
-	var initialised *Queue.Node = nil
-	return &Buffer{head: initialised, replicationID: 0, size: 0}
 }
 
 func (buf *Buffer) PersistBuffer() {
 	//store buffer to disk
-	f, err := os.Create("buffer" + fmt.Sprintf("%d", buf.replicationID))
+	f, err := os.Create("buffer.buf")
 	if err != nil {
 		panic(err)
 	}
