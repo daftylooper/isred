@@ -11,11 +11,11 @@ func main() {
 		fmt.Println("Initialise Buffer Error:", err)
 	}
 
-	buf = buf.PushCommand("hallo")
-	buf = buf.PushCommand("is")
-	buf = buf.PushCommand("this")
-	buf = buf.PushCommand("a")
-	buf = buf.PushCommand("buffer??!")
+	buf, err = buf.PushCommand("hallo")
+	buf, err = buf.PushCommand("is")
+	buf, err = buf.PushCommand("this")
+	buf, err = buf.PushCommand("a")
+	buf, err = buf.PushCommand("buffer??!")
 
 	// t := ""
 	// buf, t = buf.GetCommand()
@@ -31,6 +31,6 @@ func main() {
 	}
 
 	buf.DebugBuffer()
-	buf = buf.PushCommand("NEWLY FORMED!")
+	buf, err = buf.PushCommand("NEWLY FORMED!")
 	buf.DebugBuffer()
 }

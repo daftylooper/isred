@@ -11,7 +11,7 @@ func MakeNode(value string) *Node {
 	return &Node{value: value, next: nil}
 }
 
-func Enqueue(head *Node, value string) *Node {
+func Enqueue(head *Node, value string) (*Node, error) {
 	if head == nil {
 		head = MakeNode(value)
 	} else {
@@ -21,13 +21,12 @@ func Enqueue(head *Node, value string) *Node {
 		}
 		temp.next = MakeNode(value)
 	}
-	return head
+	return head, nil
 }
 
-func Dequeue(head *Node) (*Node, string) {
+func Dequeue(head *Node) (*Node, string, error) {
 	if head == nil {
-		fmt.Println("queue empty, cannot dequeue")
-		return head, "-1"
+		return head, "-1", fmt.Errorf("queue empty, cannot dequeue")
 	} else {
 		var dequeued *Node = head
 
@@ -36,13 +35,13 @@ func Dequeue(head *Node) (*Node, string) {
 		var dequeuedstr string = dequeued.value
 		dequeued = nil
 
-		return head, dequeuedstr
+		return head, dequeuedstr, nil
 	}
 }
 
-func DebugQueue(head *Node) {
+func DebugQueue(head *Node) error {
 	if head == nil {
-		fmt.Println("queue empty!")
+		return fmt.Errorf("qeueu empty!")
 	} else {
 		var temp *Node = head
 		for temp.next != nil {
@@ -51,6 +50,8 @@ func DebugQueue(head *Node) {
 		}
 		fmt.Printf("->%s\n", temp.value)
 	}
+
+	return nil
 }
 
 func ConcatValues(head *Node) string {

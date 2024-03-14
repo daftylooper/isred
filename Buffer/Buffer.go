@@ -56,17 +56,21 @@ func (buf *Buffer) ReadBuffer(filename string) (*Buffer, error) {
 	var initialised *Queue.Node = nil
 	buffer := parts[2 : len(parts)-1] //includes a blank val in parts array duie to strings.Split
 	for _, bufvals := range buffer {
-		initialised = Queue.Enqueue(initialised, bufvals)
+		initialised, err = Queue.Enqueue(initialised, bufvals)
+		if err != nil {
+			return buf, err
+		}
 	}
 
 	return &Buffer{head: initialised, replicationID: replicationID, size: size}, nil
 }
 
-func (buf *Buffer) PersistBuffer(filename string) {
+func (buf *Buffer) PersistBuffer(filename string) error {
 	//store buffer to disk
 	f, err := os.Create(filename + ".buf")
 	if err != nil {
-		panic(err)
+		fmt.Println("Couldn't create file:", err)
+		return err
 	}
 
 	defer f.Close()
@@ -79,22 +83,30 @@ func (buf *Buffer) PersistBuffer(filename string) {
 	}
 
 	f.Sync()
+
+	return nil
 }
 
-func (buf *Buffer) PushCommand(command string) *Buffer {
-	//enqueue with err
-	buf.head = Queue.Enqueue(buf.head, command)
+func (buf *Buffer) PushCommand(command string) (*Buffer, error) {
+	var err error
+	buf.head, err = Queue.Enqueue(buf.head, command)
+	if err != nil {
+		return buf, err
+	}
 	buf.size += 1
-	return buf
+	return buf, nil
 }
 
 // iteratively gets next command from buffer queue
-func (buf *Buffer) GetCommand() (*Buffer, string) {
-	//dequeue with val, err
+func (buf *Buffer) GetCommand() (*Buffer, string, error) {
+	var err error
 	command := ""
-	buf.head, command = Queue.Dequeue(buf.head)
+	buf.head, command, err = Queue.Dequeue(buf.head)
+	if err != nil {
+		fmt.Println("Couldn't Enqueue Command:", err)
+	}
 	buf.size -= 1
-	return buf, command
+	return buf, command, err
 }
 
 func (buf *Buffer) DebugBuffer() {
