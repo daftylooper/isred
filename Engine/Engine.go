@@ -1,13 +1,13 @@
 // This the main node of the isred engine that performs caching, persistence, has a buffer etc..
 
-package main
+package Engine
 
 import (
-	"bufio"
 	"fmt"
+	"isred/Buffer"
 	"isred/Engine/Cacher"
-	"os"
 	"strings"
+	"time"
 )
 
 type Query struct {
@@ -31,58 +31,51 @@ func ParseQuery(query string) (*Query, error) {
 	}
 }
 
-func EngineLoop(kvs *Cacher.KeyValueStore) {
+func EngineLoop(kvs *Cacher.KeyValueStore, buf *Buffer.Buffer, replybuf *Buffer.Buffer) {
+	fmt.Println("Starting Up Engine Loop!")
 	for {
-		query := ""
-		scanner := bufio.NewScanner(os.Stdin)
-		fmt.Print("Enter your query: ")
-		if scanner.Scan() {
-			query += scanner.Text()
-		} else {
-			fmt.Println("Error reading input:", scanner.Err())
+		query, _ := buf.GetCommand()
+		// fmt.Println("->", query)
+		// if query not empty( if empty queue dequeued )
+		if query != "" {
+			// fmt.Println("engine received query:", query)
+			switch query, _ := ParseQuery(query); query.operation {
+			case "GET":
+				out, err := kvs.Get(query.key)
+				fmt.Println(err)
+				replybuf.PushCommand(out)
+			case "SET":
+				err := kvs.Set(query.key, query.value)
+				fmt.Println(err)
+			case "SSET":
+				err := kvs.SafeSet(query.key, query.value)
+				fmt.Println(err)
+			case "EXISTS":
+				outbool, err := kvs.Exists(query.key)
+				fmt.Println(err)
+				out := ""
+				if outbool {
+					out = query.key + " EXISTS!"
+				} else {
+					out = query.key + " DOESN'T EXIST!"
+				}
+				replybuf.PushCommand(out)
+			case "DELETE":
+				outbool, err := kvs.Delete(query.key)
+				fmt.Println(err)
+				out := ""
+				if outbool {
+					out = query.key + " DELETED!"
+				} else {
+					out = query.key + " COULDN'T DELETE!"
+				}
+				replybuf.PushCommand(out)
+			case "VIEW":
+				out := kvs.View()
+				fmt.Println(out)
+			}
 		}
-		fmt.Println("--->", query)
-
-		// replace fmt.Println with something that pushes it to a module that handles cli
-		switch query, _ := ParseQuery(query); query.operation {
-		case "GET":
-			out, err := kvs.Get(query.key)
-			fmt.Println(out, err)
-		case "SET":
-			err := kvs.Set(query.key, query.value)
-			fmt.Println(err)
-		case "SSET":
-			err := kvs.SafeSet(query.key, query.value)
-			fmt.Println(err)
-		case "EXISTS":
-			out, err := kvs.Exists(query.key)
-			fmt.Println(out, err)
-		case "DELETE":
-			out, err := kvs.Delete(query.key)
-			fmt.Println(out, err)
-		case "VIEW":
-			out := kvs.View()
-			fmt.Println(out)
-		}
+		// doesn't work without thisss??? why??
+		time.Sleep(10 * time.Millisecond)
 	}
-}
-
-func main() {
-	kvs := Cacher.NewKeyValueStore()
-
-	// kvs.Set("allo", "allo")
-	// kvs.Set("uncle", "roger")
-	// b1, _ := kvs.Exists("qwerty")
-	// b2, _ := kvs.Exists("allo")
-	// fmt.Println(b1, b2)
-	// val, _ := kvs.Get("uncle")
-	// fmt.Println(val)
-
-	// fmt.Println("Before Deletion Exists 'allo':", b2)
-	// kvs.Delete("allo")
-	// b3, _ := kvs.Exists("allo")
-	// fmt.Println("After Deletion Exists 'allo':", b3)
-
-	EngineLoop(kvs)
-
 }

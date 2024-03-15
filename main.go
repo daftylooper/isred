@@ -3,34 +3,51 @@ package main
 import (
 	"fmt"
 	"isred/Buffer"
+	"isred/Engine"
+	"isred/Engine/Cacher"
+	"isred/Server"
+	"log"
+	"time"
 )
 
+func Getter(buf *Buffer.Buffer) {
+	for {
+		buf.GetCommand()
+		// fmt.Println("->", str)
+		buf.DebugBuffer()
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func main() {
+	replybuf, err := Buffer.InitialiseBuffer(-1)
+	if err != nil {
+		fmt.Println("Failure to Initialise Reply Buffer:", err)
+	}
+
+	server := Server.NewServer(":3000", replybuf)
+
 	buf, err := Buffer.InitialiseBuffer(-1)
 	if err != nil {
-		fmt.Println("Initialise Buffer Error:", err)
+		fmt.Println("Failure to Initialise Buffer:", err)
 	}
 
-	buf, err = buf.PushCommand("hallo")
-	buf, err = buf.PushCommand("is")
-	buf, err = buf.PushCommand("this")
-	buf, err = buf.PushCommand("a")
-	buf, err = buf.PushCommand("buffer??!")
+	kvs := Cacher.NewKeyValueStore()
 
-	// t := ""
-	// buf, t = buf.GetCommand()
-	// fmt.Println(t)
+	go func() {
+		for msg := range server.GetMsgch() {
+			err := buf.PushCommand(string(msg))
+			if err != nil {
+				fmt.Println("Couldn't Push:", err)
+			}
+			// buf.PersistBuffer("newfile")
+		}
+	}()
 
-	buf.DebugBuffer()
+	// go Getter(buf)
 
-	buf.PersistBuffer("buffer")
+	go Engine.EngineLoop(kvs, buf, replybuf)
 
-	buf, err = buf.ReadBuffer("buffer")
-	if err != nil {
-		fmt.Println("Error Reading Buffer:", err)
-	}
+	log.Fatal(server.Start())
 
-	buf.DebugBuffer()
-	buf, err = buf.PushCommand("NEWLY FORMED!")
-	buf.DebugBuffer()
 }

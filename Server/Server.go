@@ -2,7 +2,9 @@ package Server
 
 import (
 	"fmt"
+	"isred/Buffer"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -10,23 +12,26 @@ type Server struct {
 	ln         net.Listener
 	quitch     chan struct{}
 	msgch      chan []byte
+	replybuf   *Buffer.Buffer
 }
 
 func (s *Server) GetMsgch() chan []byte {
 	return s.msgch
 }
 
-func NewServer(listenAddr string) *Server {
+func NewServer(listenAddr string, replybuf *Buffer.Buffer) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		quitch:     make(chan struct{}),
 		//setting 10 arbitrarily
-		msgch: make(chan []byte, 10),
+		msgch:    make(chan []byte, 10),
+		replybuf: replybuf,
 	}
 }
 
 // sets listener upon start
 func (s *Server) Start() error {
+	fmt.Println("Starting Up Server!")
 	ln, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
 		return err
@@ -54,6 +59,7 @@ func (s *Server) AcceptLoop() {
 		fmt.Println("New connection to server:", conn.RemoteAddr())
 
 		go s.ReadLoop(conn)
+		go s.WriteLoop(conn)
 	}
 }
 
@@ -69,7 +75,19 @@ func (s *Server) ReadLoop(conn net.Conn) {
 		}
 
 		s.msgch <- buf[:n]
+	}
+}
 
-		conn.Write([]byte("roger that!\n"))
+func (s *Server) WriteLoop(conn net.Conn) {
+	for {
+		reply, _ := s.replybuf.GetCommand()
+		// if err != nil {
+		// 	fmt.Println("Couldn't Read from Reply Buffer:", err)
+		// }
+		if reply != "" {
+			fmt.Println("server!", reply)
+			conn.Write([]byte(reply + "\n"))
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }

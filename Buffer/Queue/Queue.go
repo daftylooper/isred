@@ -26,7 +26,7 @@ func Enqueue(head *Node, value string) (*Node, error) {
 
 func Dequeue(head *Node) (*Node, string, error) {
 	if head == nil {
-		return head, "-1", fmt.Errorf("queue empty, cannot dequeue")
+		return head, "", fmt.Errorf("queue empty, cannot dequeue")
 	} else {
 		var dequeued *Node = head
 

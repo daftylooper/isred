@@ -46,3 +46,33 @@
 // 	head, t = Queue.Dequeue(head)
 // 	fmt.Println(t)
 // }
+
+// func main() {
+// 	buf, err := Buffer.InitialiseBuffer(-1)
+// 	if err != nil {
+// 		fmt.Println("Initialise Buffer Error:", err)
+// 	}
+
+// 	_ = buf.PushCommand("does")
+// 	_ = buf.PushCommand("this")
+// 	_ = buf.PushCommand("srsly")
+// 	_ = buf.PushCommand("work")
+// 	_ = buf.PushCommand("buffer??!")
+
+// 	// t := ""
+// 	// buf, t = buf.GetCommand()
+// 	// fmt.Println(t)
+
+// 	buf.DebugBuffer()
+
+// 	buf.PersistBuffer("buffer")
+
+// 	buf, err = buf.ReadBuffer("buffer")
+// 	if err != nil {
+// 		fmt.Println("Error Reading Buffer:", err)
+// 	}
+
+// 	buf.DebugBuffer()
+// 	_ = buf.PushCommand("CYKAAA BLYATT")
+// 	buf.DebugBuffer()
+// }

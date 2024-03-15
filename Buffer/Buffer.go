@@ -87,26 +87,27 @@ func (buf *Buffer) PersistBuffer(filename string) error {
 	return nil
 }
 
-func (buf *Buffer) PushCommand(command string) (*Buffer, error) {
+func (buf *Buffer) PushCommand(command string) error {
 	var err error
 	buf.head, err = Queue.Enqueue(buf.head, command)
 	if err != nil {
-		return buf, err
+		return err
 	}
 	buf.size += 1
-	return buf, nil
+	return nil
 }
 
 // iteratively gets next command from buffer queue
-func (buf *Buffer) GetCommand() (*Buffer, string, error) {
+func (buf *Buffer) GetCommand() (string, error) {
 	var err error
 	command := ""
 	buf.head, command, err = Queue.Dequeue(buf.head)
 	if err != nil {
-		fmt.Println("Couldn't Enqueue Command:", err)
+		return "", err
 	}
 	buf.size -= 1
-	return buf, command, err
+	fmt.Println(command)
+	return command, nil
 }
 
 func (buf *Buffer) DebugBuffer() {
