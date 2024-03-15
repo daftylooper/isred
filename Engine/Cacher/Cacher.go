@@ -59,3 +59,7 @@ func (kvs *KeyValueStore) Delete(key string) (bool, error) {
 	delete(kvs.store, key)
 	return true, nil
 }
+
+func (kvs *KeyValueStore) View() *map[string]string {
+	return &kvs.store
+}
